@@ -2,5 +2,8 @@
 __pycache__/
 *.pyc
 
-# uv-managed virtualenv 
+# uv-managed virtualenv
 .venv/
+
+# Backend runtime data (sensitive urls.txt + generated snapshot/temp files)
+backend/data/

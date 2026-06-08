@@ -1,14 +1,32 @@
 """Fetch printer status pages and turn them into validated `PrinterData`."""
 
+import ssl
 from datetime import datetime, timezone
 
 import requests
 import urllib3
 from parsel import Selector
+from requests.adapters import HTTPAdapter
+from urllib3.util.ssl_ import create_urllib3_context
 
 from printmonitor.schema import PrinterData, Supply, Tray
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+class LegacyTLSAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = create_urllib3_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ctx.set_ciphers("DEFAULT@SECLEVEL=0")
+        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+        kwargs["ssl_context"] = ctx
+        return super().init_poolmanager(*args, **kwargs)
+
+
+_session = requests.Session()
+_session.mount("https://", LegacyTLSAdapter())
 
 
 def text(sel, css):
@@ -17,7 +35,7 @@ def text(sel, css):
 
 
 def scrape_printer(url):
-    resp = requests.get(url, verify=False, timeout=10)
+    resp = _session.get(url, verify=False, timeout=10)
     resp.raise_for_status()
     sel = Selector(text=resp.text)
 
