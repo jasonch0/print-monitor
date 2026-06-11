@@ -17,10 +17,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class LegacyTLSAdapter(HTTPAdapter):
     def init_poolmanager(self, *args, **kwargs):
         ctx = create_urllib3_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        ctx.set_ciphers("DEFAULT@SECLEVEL=0")
-        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+        ctx.check_hostname = False # don't require cert's hostname to match the URL
+        ctx.verify_mode = ssl.CERT_NONE  # don't require a trusted/valid cert at all
+        ctx.set_ciphers("DEFAULT@SECLEVEL=0") # accept weak, old ciphers
+        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4) # tolerate the old handshake style
         kwargs["ssl_context"] = ctx
         return super().init_poolmanager(*args, **kwargs)
 
