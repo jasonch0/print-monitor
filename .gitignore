@@ -7,6 +7,3 @@ __pycache__/
 
 # Backend runtime data (sensitive urls.txt + generated snapshot/temp files)
 backend/data/
-
-# Backend generated schema for frontend typescript (exported from schema.py by scripts/export_schema.py)
-backend/schema/

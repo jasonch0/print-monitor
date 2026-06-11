@@ -1,0 +1,33 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "gen:schema": "mkdir -p schema && uv run --project ../backend python ../backend/scripts/export_schema.py > schema/printer.schema.json",
+    "gen:types": "npm run gen:schema && mkdir -p lib && json2ts -i schema/printer.schema.json -o lib/types.ts",
+    "prebuild": "npm run gen:types"
+  },
+  "dependencies": {
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "json-schema-to-typescript": "^15.0.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
