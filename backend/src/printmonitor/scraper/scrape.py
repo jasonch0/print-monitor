@@ -40,6 +40,8 @@ def scrape_printer(url):
     sel = Selector(text=resp.text)
 
     printer_name = text(sel, "#HomeDeviceIp::text")
+    if printer_name:
+        printer_name = printer_name.removesuffix(".bc.edu")
     machine_status = text(sel, "#MachineStatus::text")
 
     supplies = []
