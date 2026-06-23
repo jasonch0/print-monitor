@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 import { PrinterData } from "@/lib/types";
 import { fetchPrinterData } from "@/lib/api";
+import { locationOf } from "@/lib/locations";
 
 const POLL_INTERVAL_MS = 12_000;
 
@@ -113,6 +114,7 @@ export default function Table() {
   const [printers, setPrinters] = useState<PrinterData[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [location, setLocation] = useState("All");
 
   useEffect(() => {
     let active = true;
@@ -138,8 +140,23 @@ export default function Table() {
     };
   }, []);
 
+  const locationOptions = useMemo(() => {
+    const seen = new Set(printers.map((p) => locationOf(p.printer_name)));
+    return Array.from(seen).sort((a, b) =>
+      a === "other" ? 1 : b === "other" ? -1 : a.localeCompare(b)
+    );
+  }, [printers]);
+
+  const visiblePrinters = useMemo(
+    () =>
+      location === "All"
+        ? printers
+        : printers.filter((p) => locationOf(p.printer_name) === location),
+    [printers, location]
+  );
+
   const table = useReactTable({
-    data: printers,
+    data: visiblePrinters,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -148,23 +165,60 @@ export default function Table() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const header = (
+    <div className="mb-2 flex items-center justify-between px-4">
+      <div>
+        <h1 className="text-lg font-semibold">BC Print Monitor</h1>
+        <p className="text-xs text-gray-500">built by Jason Cho ’26</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <label htmlFor="location-filter" className="text-sm text-gray-700">
+          Location:
+        </label>
+        <select
+          id="location-filter"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="rounded border border-gray-200 px-2 py-1 text-sm text-black"
+        >
+          <option value="All">All</option>
+          {locationOptions.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+
   if (error) {
-    return <p className="text-red-600">Error: {error}</p>;
+    return (
+      <div>
+        {header}
+        <p className="px-4 text-red-600">Error: {error}</p>
+      </div>
+    );
   }
 
   if (printers.length === 0) {
     return (
-      <div className="flex items-center justify-center py-80">
-        <div
-          role="status"
-          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]"
-        />
+      <div>
+        {header}
+        <div className="flex items-center justify-center py-80">
+          <div
+            role="status"
+            className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]"
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <table className="w-full border-collapse text-left text-sm text-gray-500">
+    <div>
+      {header}
+      <table className="w-full border-collapse text-left text-sm text-gray-500">
       <thead className="bg-gray-50 text-sm uppercase text-black">
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={headerGroup.id}>
@@ -206,7 +260,8 @@ export default function Table() {
             ))}
           </tr>
         ))}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   );
 }
