@@ -131,7 +131,7 @@ export default function Table() {
             {headerGroup.headers.map((header) => (
               <th
                 key={header.id}
-                className="whitespace-nowrap px-4 py-2 font-semibold text-black"
+                className="whitespace-nowrap px-4 py-2 font-medium text-black"
               >
                 {flexRender(
                   header.column.columnDef.header,
@@ -144,9 +144,9 @@ export default function Table() {
       </thead>
       <tbody>
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id} className="border-b bg-white hover:bg-gray-100">
+          <tr key={row.id} className="border-b border-gray-200 bg-white hover:bg-gray-100">
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} className="border px-4 py-2">
+              <td key={cell.id} className="border border-gray-200 px-4 py-2">
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}
