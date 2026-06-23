@@ -5,6 +5,9 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
+  SortingFn,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { PrinterData } from "@/lib/types";
@@ -33,16 +36,46 @@ const columnHelper = createColumnHelper<PrinterData>();
 
 const VISIBLE_TRAYS = ["Tray 2", "Tray 3"];
 
+function statusIsProblem(p: PrinterData): boolean {
+  return statusColor(p.machine_status) !== "";
+}
+
+function suppliesIsProblem(p: PrinterData): boolean {
+  return p.supplies?.some((s) => isLowSupply(s.level)) ?? false;
+}
+
+function traysIsProblem(p: PrinterData): boolean {
+  return (
+    p.trays?.some((t) => VISIBLE_TRAYS.includes(t.name) && t.status !== "OK") ??
+    false
+  );
+}
+
+function bySeverity(isProblem: (p: PrinterData) => boolean): SortingFn<PrinterData> {
+  return (rowA, rowB) => {
+    const a = isProblem(rowA.original) ? 0 : 1;
+    const b = isProblem(rowB.original) ? 0 : 1;
+    if (a !== b) return a - b;
+    return rowA.original.printer_name.localeCompare(rowB.original.printer_name);
+  };
+}
+
+const byFreshest: SortingFn<PrinterData> = (rowA, rowB) =>
+  new Date(rowB.original.last_updated).getTime() -
+  new Date(rowA.original.last_updated).getTime();
+
 const columns = [
   columnHelper.accessor("printer_name", { header: "Printer" }),
   columnHelper.accessor("machine_status", {
     header: "Status",
+    sortingFn: bySeverity(statusIsProblem),
     cell: (info) => (
       <span className={statusColor(info.getValue())}>{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor("supplies", {
     header: "Supplies",
+    sortingFn: bySeverity(suppliesIsProblem),
     cell: (info) =>
       info.getValue()?.map((s, i) => (
         <Fragment key={s.name}>
@@ -55,6 +88,7 @@ const columns = [
   }),
   columnHelper.accessor("trays", {
     header: "Trays",
+    sortingFn: bySeverity(traysIsProblem),
     cell: (info) =>
       info
         .getValue()
@@ -70,6 +104,7 @@ const columns = [
   }),
   columnHelper.accessor("last_updated", {
     header: "Last Updated",
+    sortingFn: byFreshest,
     cell: (info) => `${secondsAgo(info.getValue())}s ago`,
   }),
 ];
@@ -77,6 +112,7 @@ const columns = [
 export default function Table() {
   const [printers, setPrinters] = useState<PrinterData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   useEffect(() => {
     let active = true;
@@ -105,7 +141,11 @@ export default function Table() {
   const table = useReactTable({
     data: printers,
     columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    sortDescFirst: false,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   });
 
   if (error) {
@@ -131,12 +171,26 @@ export default function Table() {
             {headerGroup.headers.map((header) => (
               <th
                 key={header.id}
-                className="whitespace-nowrap px-4 py-2 font-medium text-black"
+                onClick={header.column.getToggleSortingHandler()}
+                className={`whitespace-nowrap border border-gray-200 px-4 py-2 font-medium text-black ${
+                  header.column.getCanSort()
+                    ? "cursor-pointer select-none hover:bg-white"
+                    : ""
+                }`}
               >
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
+                <span className="flex w-full items-center justify-between gap-1">
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
+                  {header.column.getCanSort() &&
+                    ({
+                      asc: <span>▲</span>,
+                      desc: <span>▼</span>,
+                    }[header.column.getIsSorted() as string] ?? (
+                      <span className="text-black">↕</span>
+                    ))}
+                </span>
               </th>
             ))}
           </tr>
