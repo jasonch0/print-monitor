@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "gen:schema": "mkdir -p schema && uv run --project ../backend python ../backend/scripts/export_schema.py > schema/printer.schema.json",
-    "gen:types": "npm run gen:schema && mkdir -p lib && json2ts -i schema/printer.schema.json -o lib/types.ts",
+    "gen:types": "mkdir -p lib && json2ts -i schema/printer.schema.json -o lib/types.ts",
     "prebuild": "npm run gen:types"
   },
   "dependencies": {

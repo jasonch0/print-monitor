@@ -10,14 +10,15 @@ export function secondsAgo(isoString: string): number {
   return Math.round((Date.now() - new Date(isoString).getTime()) / 1000);
 }
 
-export function isLowSupply(level: string): boolean {
+export function isLowSupply(level: string | null | undefined): boolean {
+  if (!level) return false;
   const n = parseInt(level.replace(/[^\d]/g, ""), 10);
   return !Number.isNaN(n) && n <= 20;
 }
 
-export function statusColor(status: string): string {
-  const s = status.toLowerCase();
-  return /jam|mismatch|empty|issue|low/.test(s) ? RED : "";
+export function statusColor(status: string | null | undefined): string {
+  if (!status) return "";
+  return /jam|mismatch|empty|issue|low/.test(status.toLowerCase()) ? RED : "";
 }
 
 export function statusIsProblem(p: PrinterData): boolean {
