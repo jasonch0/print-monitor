@@ -74,7 +74,7 @@ export default function Table() {
     <div className="mb-2 flex items-center justify-between px-4">
       <div>
         <h1 className="text-lg font-semibold">BC Print Monitor</h1>
-        <p className="text-xs text-gray-500">built by Jason Cho ’26</p>
+        <p className="text-xs text-gray-500">rebuilt by Jason Cho '26, originally by Andrew R. Clark '24</p>
       </div>
       <div className="flex items-center gap-2">
         <label htmlFor="location-filter" className="text-sm text-gray-700">
