@@ -12,6 +12,7 @@ import { fetchPrinterData } from "@/lib/api";
 import { locationOf } from "@/lib/locations";
 import { columns } from "./columns";
 import PrinterTable from "./PrinterTable";
+import PrinterCards from "./PrinterCards";
 
 const POLL_INTERVAL_MS = 12_000;
 
@@ -107,7 +108,14 @@ export default function Table() {
       />
     </div>
   ) : (
-    <PrinterTable table={table} />
+    <>
+      <div className="hidden sm:block">
+        <PrinterTable table={table} />
+      </div>
+      <div className="sm:hidden">
+        <PrinterCards table={table} />
+      </div>
+    </>
   );
 
   return (

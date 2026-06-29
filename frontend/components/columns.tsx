@@ -11,10 +11,24 @@ import {
   statusColor,
   statusIsProblem,
   suppliesIsProblem,
+  tonerIsProblem,
   traysIsProblem,
 } from "@/lib/severity";
 
 const columnHelper = createColumnHelper<PrinterData>();
+
+function supplyCell(supplies: PrinterData["supplies"], wantToner: boolean) {
+  return supplies
+    ?.filter((s) => !!s.is_toner === wantToner)
+    .map((s, i) => (
+      <Fragment key={s.name}>
+        {i > 0 && ", "}
+        <span className={isLowSupply(s.level) ? ORANGE : ""}>
+          {s.name.replace(" Cartridge", "")}: {s.level}
+        </span>
+      </Fragment>
+    ));
+}
 
 export const columns = [
   columnHelper.accessor("printer_name", { header: "Printer" }),
@@ -26,17 +40,16 @@ export const columns = [
     ),
   }),
   columnHelper.accessor("supplies", {
+    id: "toner",
+    header: "Toner",
+    sortingFn: bySeverity(tonerIsProblem),
+    cell: (info) => supplyCell(info.getValue(), true),
+  }),
+  columnHelper.accessor("supplies", {
+    id: "supplies",
     header: "Supplies",
     sortingFn: bySeverity(suppliesIsProblem),
-    cell: (info) =>
-      info.getValue()?.map((s, i) => (
-        <Fragment key={s.name}>
-          {i > 0 && ", "}
-          <span className={isLowSupply(s.level) ? ORANGE : ""}>
-            {s.name.replace(" Cartridge", "")}: {s.level}
-          </span>
-        </Fragment>
-      )),
+    cell: (info) => supplyCell(info.getValue(), false),
   }),
   columnHelper.accessor("trays", {
     header: "Trays",

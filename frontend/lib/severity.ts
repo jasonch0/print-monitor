@@ -25,8 +25,12 @@ export function statusIsProblem(p: PrinterData): boolean {
   return statusColor(p.machine_status) !== "";
 }
 
+export function tonerIsProblem(p: PrinterData): boolean {
+  return p.supplies?.some((s) => s.is_toner && isLowSupply(s.level)) ?? false;
+}
+
 export function suppliesIsProblem(p: PrinterData): boolean {
-  return p.supplies?.some((s) => isLowSupply(s.level)) ?? false;
+  return p.supplies?.some((s) => !s.is_toner && isLowSupply(s.level)) ?? false;
 }
 
 export function traysIsProblem(p: PrinterData): boolean {

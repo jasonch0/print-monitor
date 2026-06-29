@@ -34,6 +34,10 @@ def text(sel, css):
     return value.strip() if value else None
 
 
+def is_toner(name):
+    return "kit" not in name.lower()
+
+
 def scrape_printer(url):
     resp = _session.get(url, verify=False, timeout=10)
     resp.raise_for_status()
@@ -50,7 +54,13 @@ def scrape_printer(url):
         name = text(sel, f"#SupplyName{i}::text")
         if name is None:
             break
-        supplies.append(Supply(name=name, level=text(sel, f"#SupplyPLR{i}::text")))
+        supplies.append(
+            Supply(
+                name=name,
+                level=text(sel, f"#SupplyPLR{i}::text"),
+                is_toner=is_toner(name),
+            )
+        )
         i += 1
 
     trays = []

@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "BC Print Monitor",
-  description: "Print Monitor that scrapes the embedded web servers of Boston College networked printers",
+  description: "Live Status of Boston College networked printers",
+  robots: { index: false },
 };
 
 export default function RootLayout({

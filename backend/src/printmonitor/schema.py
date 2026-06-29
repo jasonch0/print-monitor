@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class Supply(BaseModel):
     name: str
     level: str | None = None
+    is_toner: bool | None = None
 
 
 class Tray(BaseModel):
