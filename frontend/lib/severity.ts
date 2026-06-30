@@ -13,7 +13,7 @@ export function secondsAgo(isoString: string): number {
 export function isLowSupply(level: string | null | undefined): boolean {
   if (!level) return false;
   const n = parseInt(level.replace(/[^\d]/g, ""), 10);
-  return !Number.isNaN(n) && n <= 20;
+  return Number.isNaN(n) || n <= 20;
 }
 
 export function statusColor(status: string | null | undefined): string {
